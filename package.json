@@ -1,0 +1,22 @@
+{
+  "name": "grapher",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "tsc",
+    "lint": "tslint src/**/*.ts --fix",
+    "dev": "tsc -w"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tslint": "^6.1.2",
+    "typescript": "^3.9.6"
+  },
+  "dependencies": {
+    "zrender": "^4.3.1"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "./build",
+    "sourceMap": true,
+    "declaration": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "target": "es5",
+    "allowJs": true,
+    "lib": ["es2018", "dom"],
+  },
+  "include": ["core/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts","core/rubbuer/*.ts"]
+}
