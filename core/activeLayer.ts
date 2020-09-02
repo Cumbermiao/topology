@@ -19,9 +19,13 @@ export default class ActiveLayer {
     
     Store.subscribe('active-node',(nodes)=>{
       console.log('activeNode', nodes)
+      if(this.data && this.data!==nodes){
+        this.data?.dispose();
+        this.data = undefined;
+      }
       if(!nodes) {
-        this.data = null;
-        this.nodeBackup = null;
+        this.data = undefined;
+        this.nodeBackup = undefined;
         this.hideResizeCP();
         return;
       }

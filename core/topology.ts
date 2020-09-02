@@ -215,18 +215,16 @@ export class Topology{
     if(e.event.button!==0) return;
     // change moveInType: ResizeCP, LinkTo, dragStart
     console.log('mousedown',e)
-    if(this.moveIn.type === MoveInType.Nodes){
-      // TODO: inactive last active node
-      Store.set('active-node', this.moveIn.hoverNode)
-    }else if(this.moveIn.type === MoveInType.ResizeCP){
-      if(!this.mouseDown){
-        this.mouseDown = { x:e.offsetX, y:e.offsetY}
-      }else{
-        this.mouseDown.x = e.offsetX
-        this.mouseDown.y = e.offsetY
+    if(e.target){
+      const node = e.target._node
+      if(node.type === NodeType.Node){
+        Store.set('active-node', node)
+      }else if(node.type === NodeType.ResizeCP){
+        // do nothing 
       }
-      
+      return
     }
+    Store.set('active-node',null)
   }
 
   private mouseup = (e: zMouseEvent) => {
