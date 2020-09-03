@@ -3,8 +3,8 @@ import TopologyData from './models/data';
 import ActiveLayer from './activeLayer';
 import OffscreenLayer from './offscreenLayer';
 import zrender from 'zrender';
-import { Lock, zMouseEvent, NodeType } from './declare';
-import { Line } from './models/node';
+import { Lock, zMouseEvent, NodeType, log } from './declare';
+import { Line, Node } from './models/pen';
 import Point from './models/point';
 import HoverLayer from './hoverLayer';
 import ResizeCP from './models/resizeCP';
@@ -71,9 +71,9 @@ export class Topology{
     // renderer.on('mousemove', this.mousemove)
     renderer.on('mousedown', this.mousedown)
     // renderer.on('mouseup', this.mouseup)
-    renderer.on('click', this.click)
+    // renderer.on('click', this.click)
+    // renderer.on('dragstart', this.dragstart)
     renderer.on('drag', this.drag)
-    renderer.on('dragstart', this.dragstart)
     renderer.on('dragend', this.dragend)
     // renderer.on('dragenter', this.dragenter)
     // renderer.on('dragleave', this.dragleave)
@@ -82,30 +82,29 @@ export class Topology{
     
   }
 
-  private drag = (e: zMouseEvent)=>{
-    if(!e.target) return;
-    console.log('drag', e);
-    const type = e.target._node.type;
-    if(type === NodeType.ResizeCP){
-      this.activeLayer.resizeRect(e.target._node)
-    }
-    // else if(type === NodeType.Node){
-    //   Store.set('active-node', e.target._node)
-    // }
-    
+  private dragstart = (e: zMouseEvent)=>{
+    /**
+     * TODO:
+     * [] ResizeCP drag
+     */
+    log('dragstart', e)
   }
 
-  private dragstart = (e: zMouseEvent)=>{
-    console.log('dragstart', e)
-    const type = e.target._node.type;
-    if(type === NodeType.Node){
-      Store.set('active-node', e.target._node)
+  private drag = (e: zMouseEvent)=>{
+    if(!e.target) return;
+    log('drag', e);
+    const node = e.target._node;
+    if(node.type === NodeType.ResizeCP){
+      this.activeLayer.resizeRect(e.target._node)
+    }else if(node.type === NodeType.Node){
+      node.translate()
     }
+    
   }
 
   private dragend = (e: zMouseEvent)=>{
     if(!e.target) return;
-    console.log('dragend', e)
+    log('dragend', e)
     // 缩放结束， 使用 activeLayer中的 backup 替换 data 中对应的节点
     this.dispatch('resize-node', e)
     const type = e.target._node.type;
@@ -116,19 +115,19 @@ export class Topology{
   }
 
   // private dragenter = (e: zMouseEvent)=>{
-  //   console.log('dragenter', e)
+  //   log('dragenter', e)
   // }
 
   // private dragleave = (e: zMouseEvent)=>{
-  //   console.log('dragleave', e)
+  //   log('dragleave', e)
   // }
 
   // private dragover = (e: zMouseEvent)=>{
-  //   console.log('dragover', e)
+  //   log('dragover', e)
   // }
 
   // private drop = (e: zMouseEvent)=>{
-  //   console.log('drop', e)
+  //   log('drop', e)
   // }
 
   private mousemove = (e: zMouseEvent) => {
@@ -156,7 +155,7 @@ export class Topology{
       this.raf = null;
 
       this.getMoveIn(e);
-      console.log(this.moveIn.type)
+      log(this.moveIn.type)
 
       // NOTE: hover event
       if(!this.mouseDown){
@@ -213,33 +212,36 @@ export class Topology{
 
   private mousedown = (e: zMouseEvent) => {
     if(e.event.button!==0) return;
-    // change moveInType: ResizeCP, LinkTo, dragStart
-    console.log('mousedown',e)
-    if(e.target){
-      const node = e.target._node
-      if(node.type === NodeType.Node){
-        Store.set('active-node', node)
-      }else if(node.type === NodeType.ResizeCP){
-        // do nothing 
+    /**
+     * TODO: 
+     * [x] change active node = null
+     */
+    log('mousedown in Topology',e);
+    if(e.target) {
+      const node = e.target._node;
+      switch (node.type){
+        case NodeType.Node:
+          Store.set('active-node', node);
+          break;
       }
-      return
+    }else{
+      Store.set('active-node', null);
     }
-    Store.set('active-node',null)
   }
 
   private mouseup = (e: zMouseEvent) => {
     // only response to left click.
     if(e.event.button!==0)return;
 
-    console.log('mouseup',e)
+    log('mouseup', e)
     if(this.mouseDown){
       // TODO: drag end
     }
   }
 
   private click = (e: zMouseEvent) => {
-    // TODO: active Node/Line, ?change MoveInType
-    console.log('click')
+    // TODO:  ?change MoveInType
+    log('click')
     this.moveIn={
       type: MoveInType.None,
       activeAnchorIndex: 0,
@@ -249,14 +251,6 @@ export class Topology{
       activeNode: null,
       lineControlPoint: null,
       resizeCP: null
-    }
-    if(!e.target){
-      Store.set('active-node', null)
-    }else{
-      const node = e.target._node
-      if(node.type === NodeType.Node || node.type === NodeType.Line){
-        Store.set('active-node', node)
-      }
     }
   }
 

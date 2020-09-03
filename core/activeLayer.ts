@@ -2,38 +2,40 @@ import Store from './store'
 import Rect from './models/rect'
 import { Topology } from './topology'
 import ResizeCP from './models/resizeCP'
-import { Node } from './models/node';
+import { Node } from './models/pen';
+import { log, Lock } from './declare';
 
 const resizeCursors = ['nw-resize', 'ne-resize', 'se-resize', 'sw-resize'];
 
 export default class ActiveLayer {
-  protected data;
+  protected data; // offscreen actived node
   protected renderer;
   nodeBackup;
   resizeCP: ResizeCP[]=[];
   raf = null;
+  z = 100;
 
   constructor() {
-    // this.data = Store.get('topology-data');
     this.renderer = Store.get('topology-renderer');
     
-    Store.subscribe('active-node',(nodes)=>{
-      console.log('activeNode', nodes)
-      if(this.data && this.data!==nodes){
-        this.data?.dispose();
-        this.data = undefined;
-      }
+    Store.subscribe('active-node', nodes=>{
+      log('active-node in ActiveLayer.constructor', nodes);
+
       if(!nodes) {
         this.data = undefined;
         this.nodeBackup = undefined;
         this.hideResizeCP();
         return;
       }
-
+      
+      if(this.data && this.data!==nodes){
+        this.data?.dispose();
+      }
       this.data = nodes;
-      this.data.hide();
       this.nodeBackup = new Node(nodes);
       this.nodeBackup.render(this.renderer);
+      this.nodeBackup.hide();
+      log('nodebackup', this.nodeBackup)
       this.render();
     })
 
@@ -43,13 +45,13 @@ export default class ActiveLayer {
     return this.data.lock;
   }
 
-  getRect(){
-    if(this.nodeBackup){
-      return this.nodeBackup.rect
-    }
+  getRect(backup?:boolean){
+    if(backup && this.nodeBackup) return this.nodeBackup.rect
+    if(!backup && this.data) return this.data.rect
   }
 
   renderResizeCPs(exludeIdx?:number){
+    log('renderResizeCPS')
     const rect: Rect = this.getRect()
     const points = [
       [rect.x - 5, rect.y-5],
@@ -83,13 +85,11 @@ export default class ActiveLayer {
    * @param done boolean 是否 resize 结束
    */
   resizeRect(resizeCP:ResizeCP, done?:boolean){
+    log('resizeRect in ActiveLayer')
     const idx = resizeCursors.indexOf(resizeCP.cursor);
     const zr = resizeCP._zr;
     const position = zr.position;
-    let x = this.data.rect.x;
-    let y = this.data.rect.y;
-    let width = this.data.rect.width;
-    let height = this.data.rect.height;
+    let { x, y, width, height } = this.getRect(true);
     switch (idx){
       case 0:
         x += position[0]
@@ -113,15 +113,15 @@ export default class ActiveLayer {
         break;
     }
     
-    this.nodeBackup.resize({x,y,width,height});
+    this.data.resize({x,y,width,height});
     if(done){
       this.renderResizeCPs()
       zr.position = [0,0]
     }else{
       this.renderResizeCPs(idx);
     }
-    console.log('resizeRect', 'position', position,'idx', idx,'rect', x, y,width,height)
   }
+
 
   render(){
     // render active node & line & resize points

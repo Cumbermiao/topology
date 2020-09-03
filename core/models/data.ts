@@ -1,4 +1,4 @@
-import { Node, Line } from './node'
+import { Node, Line } from './pen'
 import { Lock } from '../declare'
 
 export default class TopologyData {

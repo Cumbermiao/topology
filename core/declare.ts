@@ -1,5 +1,5 @@
 import zrender from 'zrender';
-import { Node,Line } from './models/node'
+import { Node, Line, Pen } from './models/pen'
 export enum Direction {
   None,
   Up,
@@ -78,9 +78,33 @@ export interface zMouseEvent{
   which: number;
   wheelDelta: number;
   zrByTouch: any;
+  stop: Function;
 }
 
-export const relatedZr2Node = (displayable:zrender.Displayable, node: Node|Line): void =>{
+export const relatedZr2Node = (displayable:zrender.Displayable, node: Pen|Node|Line): void =>{
   displayable._node = node;
   node._zr.push(displayable);
+}
+
+export enum LogType {
+  Normal,
+  Warning,
+  Error
+}
+export const log = function(from?:any, description?:any, type:LogType = LogType.Normal, splitSymbol=''){
+  const css = [
+    'padding: 2px 4px;background: #2779ff;color: white;border-radius: 2px;',
+    'padding: 2px 4px;background: orange;color: white;border-radius: 2px;',
+    'padding: 2px 4px;background: #ff696a;color: white;border-radius: 2px;'
+  ]
+  const textCss = 'color: blue';
+  if(arguments.length===1){
+    console.log('%s log from %c%s', splitSymbol,css[type],from)
+    return
+  }
+  if(typeof description === 'object'){
+    console.log('%s log from %c%s%c:%o', splitSymbol,css[type],from, textCss, description)
+  }else{
+    console.log('%s log from %c%s%c:%s', splitSymbol,css[type],from, textCss, description,)
+  }
 }
