@@ -1,6 +1,5 @@
 import Rect from "./rect";
-import zrender from 'zrender';
-import {NodeType} from '../declare'
+import {NodeType, log, zrender} from '../declare'
 
 export default class ResizeCP {
   width: number = 10;
@@ -47,7 +46,11 @@ export default class ResizeCP {
       },
       cursor: this.cursor,
       draggable: true,
-      z: 100
+      z: 100,
+      slient: false
+    })
+    this._zr.on('mousemove',e=>{
+      log('moveInResizeCP', e)
     })
     this._zr._node = this;
     renderer.add(this._zr)

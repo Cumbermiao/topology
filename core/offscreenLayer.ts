@@ -1,5 +1,6 @@
 import Store from './store'
 import { Topology } from './topology'
+import { log } from './declare';
 
 export default class OffscreenLayer {
   protected data;
@@ -19,6 +20,7 @@ export default class OffscreenLayer {
   render(){
     // render nodes
     for( const item of this.data.pens){
+      log('pen in data', item)
       item.render(this.renderer)
     }
   }

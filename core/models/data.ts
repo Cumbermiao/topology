@@ -1,4 +1,4 @@
-import { Node, Line } from './pen'
+import { Node, Line, Pen } from './pen'
 import { Lock } from '../declare'
 
 export default class TopologyData {
@@ -13,6 +13,7 @@ export default class TopologyData {
   showGrid: boolean = false;
 
   data?: any;
+  history:Pen[] = [];
 
   constructor(json?:any) {
     if(json){

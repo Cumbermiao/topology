@@ -1,4 +1,5 @@
-import zrender from 'zrender';
+export const zrender:any = require('../libs/zrender/index.js');
+
 import { Node, Line, Pen } from './models/pen'
 export enum Direction {
   None,
@@ -81,8 +82,9 @@ export interface zMouseEvent{
   stop: Function;
 }
 
-export const relatedZr2Node = (displayable:zrender.Displayable, node: Pen|Node|Line): void =>{
+export const relatedZr2Node = (displayable, node: Pen|Node|Line): void =>{
   displayable._node = node;
+  console.log(node._zr)
   node._zr.push(displayable);
 }
 
@@ -91,6 +93,7 @@ export enum LogType {
   Warning,
   Error
 }
+
 export const log = function(from?:any, description?:any, type:LogType = LogType.Normal, splitSymbol=''){
   const css = [
     'padding: 2px 4px;background: #2779ff;color: white;border-radius: 2px;',
@@ -107,4 +110,12 @@ export const log = function(from?:any, description?:any, type:LogType = LogType.
   }else{
     console.log('%s log from %c%s%c:%s', splitSymbol,css[type],from, textCss, description,)
   }
+}
+
+export const generateKey = (key:string):string => `Topology-${key}`;
+
+export const storeKey = {
+  activeNode: generateKey('activeNode'), // 高亮 node
+  moveNode: generateKey('moveNode'), // 正在移动 node
+  moveNodeEnd: generateKey('moveNode:End') // node 移动结束
 }

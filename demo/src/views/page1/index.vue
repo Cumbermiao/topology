@@ -22,7 +22,7 @@
 <script>
 /* eslint-disable no-unused-vars */
 import { Topology } from '~/topology'
-import zrender from 'zrender'
+// import zrender from 'zrender'
 function isPrime(params) {
   const primes = ['string', 'number', 'bigint', 'boolean', 'undefined', 'symbol']
   if (primes.indexOf(typeof params) > -1) return true
@@ -115,34 +115,34 @@ export default {
               width: 100,
               height: 100
             }
-          },
-          {
-            name: 'rectangle',
-            text: 'rectangle2',
-            textRect: {
-              x: 20,
-              y: 20,
-              width: 50,
-              height: 50
-            },
-            textStyle: {
-              textFill: 'blue',
-              textStroke: 'red'
-            },
-            rect: {
-              x: 300,
-              y: 100,
-              width: 60,
-              height: 60
-            },
-            lock: 0
-          },
-          {
-            from: { x: 200, y: 150 },
-            to: { x: 500, y: 150 },
-            arrowType: ['', 'triangleSolid'],
-            lineColor: 'blue'
           }
+          // {
+          //   name: 'rectangle',
+          //   text: 'rectangle2',
+          //   textRect: {
+          //     x: 20,
+          //     y: 20,
+          //     width: 50,
+          //     height: 50
+          //   },
+          //   textStyle: {
+          //     textFill: 'blue',
+          //     textStroke: 'red'
+          //   },
+          //   rect: {
+          //     x: 300,
+          //     y: 100,
+          //     width: 60,
+          //     height: 60
+          //   },
+          //   lock: 0
+          // },
+          // {
+          //   from: { x: 200, y: 150 },
+          //   to: { x: 500, y: 150 },
+          //   arrowType: ['', 'triangleSolid'],
+          //   lineColor: 'blue'
+          // }
         ]
       }
     })
@@ -150,6 +150,9 @@ export default {
   methods: {
     onDrag(e, model) {
       e.dataTransfer.setData('topology', JSON.stringify(model.data))
+    },
+    matrix() {
+
     }
   }
 }

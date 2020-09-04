@@ -1,8 +1,7 @@
-import { NodeType, Lock, ShadowStyle, TextStyle, ImageAlign, relatedZr2Node, log } from "../declare";
+import { zrender, NodeType, Lock, ShadowStyle, TextStyle, ImageAlign, relatedZr2Node, log } from "../declare";
 import Rect from "./rect";
 import Point from "./point";
 import Store, { s8 } from "../store";
-import zrender from 'zrender';
 import { textFns, defaultTextFn, anchorFns, defaultAnchorFn, 
   NodeFns, defaultNodeFn, defaultImageFn, defaultIconFn 
 } from './drawFns';
@@ -15,16 +14,26 @@ export abstract class Pen {
   rect: Rect = new Rect(0,0,0,0);
   _visible: boolean;
   lock: Lock = Lock.None;
-  _zr: zrender.Displayable[] = [];;
+  _zr: any[] = []; // _zr[0] 为最外层的 Node
   z: number = 0;
   data: any;
 
+  scale: number[] = [1, 1];
   get visible(){
     return this._visible
   }
   set visible(value:boolean){
     this._visible = value;
     value ? this.show() : this.hide();
+  }
+
+  get position(){
+    if(this._zr.length) return this._zr[0].position
+    return [0,0]
+  }
+
+  set position(arr:number[]){
+    if(this._zr.length) this._zr[0].attr('position', arr)
   }
 
   constructor(json?:any) {
@@ -50,6 +59,7 @@ export abstract class Pen {
   abstract hide(): void;
   abstract dispose(): void;
   abstract render(renderer?:any): void;
+  abstract update(): void;
   
 }
 
@@ -124,7 +134,7 @@ export class Node extends Pen {
     });
 
     const valuedKeys = ['shadow','textStyle','strokeStyle','fillStyle','lineDash','lineDashOffset','rectInParent',
-    'padding','imageWidth','imageHeight','imageAlign','imgEl', 'children'];
+    'padding','imageWidth','imageHeight','imageAlign','imgEl', 'children', 'position', 'scale'];
     valuedKeys.forEach(key =>{
       //TODO: 对于指针引用类型是否需要深拷贝
       if(key === 'children' && json?.children?.length ){
@@ -145,8 +155,9 @@ export class Node extends Pen {
     this.iconFn = defaultIconFn;
   }
 
-  calcRectInfos(){
+  initRectInfos(){
     // 使用 drawFn 初始化 rect 信息
+    
     // TODO: this 是否必要
     if(this.text) this.textFn(this);
     if(this.anchors.length) this.anchorFn(this);
@@ -154,21 +165,43 @@ export class Node extends Pen {
     if(this.icon) this.iconFn(this);
   }
 
+  recalcRectInfos(){
+
+    //CONTINUE: if rect info change , rerender all _zr element
+    // if(this._zr.length){
+    //   const position = this._zr[0].position;
+    //   if(position.some(num=>num!==0)){
+    //     this.rect = new Rect(this.rect.x + position[0], this.rect.y + position[1], this.rect.width, this.rect.height);
+    //     this._zr[0].attr({
+    //       position : [0,0],
+    //       shape: {
+    //         x: this.rect.x,
+    //         y: this.rect.y,
+    //         width: this.rect.width,
+    //         height: this.rect.height
+    //       }
+    //     })
+    //   }
+      
+    //   log('recalcRectInfos', position);
+    // }
+  }
+
   clone(){ 
     return new Node(this);
   }
 
   show(){
-    this._zr.forEach(item=>item.show())
+    this._zr?.length && this._zr.forEach(item=>item.show())
   }
 
   hide(){
-    this._zr.forEach(item=>item.hide())
+    this._zr?.length && this._zr.forEach(item=>item.hide())
   }
 
   resize({x=this.rect.x,y=this.rect.y,width=this.rect.width,height=this.rect.height}){
     this.rect = new Rect(x,y,width,height)
-    this.calcRectInfos()
+    this.initRectInfos()
     let textRect = {}
     if(this.textRect) textRect = {
       x: this.textRect.x,
@@ -188,13 +221,13 @@ export class Node extends Pen {
         textRect: textRect
       }
     })
-    log('Node.resize');
+    // log('Node.resize');
   }
 
   translate(){
-    log('Pen.translate')
+    // log('Pen.translate')
     const renderer:any =  Store.get('topology-renderer');
-    renderer.flush();
+    
   }
 
   dispose(renderer?:any){
@@ -208,8 +241,8 @@ export class Node extends Pen {
 
   render(renderer){
     // TODO: render 函数拆分
-    this.calcRectInfos();
-    log('Node.render', this);
+    this.initRectInfos();
+    // log('Node.render', this);
     const style = {
       fill: this.fillStyle,
       stroke: this.strokeStyle,
@@ -239,12 +272,13 @@ export class Node extends Pen {
       draggable: this.lock === Lock.None,
       z: this.z
     });
-    log('Node.render', this.lock === Lock.None)
+    log('Node.render', rect)
     relatedZr2Node(rect, this);
     renderer.add(rect)
     this._zr.push(rect)
   }
 
+  update(){}
 
 }
 
@@ -305,4 +339,6 @@ export class Line extends Pen {
     renderer.add(line);
     this._zr.push(line)
   };
+  update(){}
+
 }

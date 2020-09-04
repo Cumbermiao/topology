@@ -2,8 +2,8 @@ import Store from './store';
 import TopologyData from './models/data';
 import ActiveLayer from './activeLayer';
 import OffscreenLayer from './offscreenLayer';
-import zrender from 'zrender';
-import { Lock, zMouseEvent, NodeType, log } from './declare';
+import {zrender} from './declare';
+import { Lock, zMouseEvent, NodeType, log, storeKey } from './declare';
 import { Line, Node } from './models/pen';
 import Point from './models/point';
 import HoverLayer from './hoverLayer';
@@ -68,7 +68,7 @@ export class Topology{
     this.hoverLayer = new HoverLayer();
     this.offscreenLayer = new OffscreenLayer();
 
-    // renderer.on('mousemove', this.mousemove)
+    renderer.on('mousemove', this.mousemove)
     renderer.on('mousedown', this.mousedown)
     // renderer.on('mouseup', this.mouseup)
     // renderer.on('click', this.click)
@@ -92,12 +92,12 @@ export class Topology{
 
   private drag = (e: zMouseEvent)=>{
     if(!e.target) return;
-    log('drag', e);
+    // log('drag', e);
     const node = e.target._node;
     if(node.type === NodeType.ResizeCP){
       this.activeLayer.resizeRect(e.target._node)
     }else if(node.type === NodeType.Node){
-      node.translate()
+      this.activeLayer.onMove()
     }
     
   }
@@ -110,6 +110,8 @@ export class Topology{
     const type = e.target._node.type;
     if(type === NodeType.ResizeCP){
       this.activeLayer.resizeRect(e.target._node, true)
+    }else if( type === NodeType.Node){
+      this.activeLayer.onMove(true)
     }
     
   }
@@ -132,8 +134,13 @@ export class Topology{
 
   private mousemove = (e: zMouseEvent) => {
     const event = e.event;
-    if(this.data.locked === Lock.NoEvent) return;
-
+    if(this.data.locked === Lock.NoEvent || !e.target) return;
+    // const node = e.target._node
+    // if(node.type === NodeType.ResizeCP){
+    //   log('moveInResizeCP')
+    // }
+    log('moveIn', e.target)
+    return 
     // if(this.mouseDown && this.moveIn.type === MoveInType.None){
     //   let translate = false;
     //   if(event.ctrlKey || event.altKey || event.shiftKey) translate = true;
@@ -221,11 +228,11 @@ export class Topology{
       const node = e.target._node;
       switch (node.type){
         case NodeType.Node:
-          Store.set('active-node', node);
+          Store.set(storeKey.activeNode, node);
           break;
       }
     }else{
-      Store.set('active-node', null);
+      Store.set(storeKey.activeNode, null);
     }
   }
 

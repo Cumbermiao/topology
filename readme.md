@@ -2,6 +2,8 @@
 
 - controller 如何控制整个 Model 大小？ 通信方式
 
+- Node 节点 resize 之后 resizeCP 不响应事件。
+
 ## 框架分层设计
 
 ### TopologyData
@@ -86,10 +88,15 @@ class ActiveLayer{
     })
   }
   
-  resize({x,y,width,height}){
-    // ... logic code
-    const data = Store.get('topology-data')
-    
+  resize({x,y,width,height}, done?:boolean){
+    if(this.backup){
+      // ... logic code
+      
+      if(done){
+        const data = Store.get('topology-data')
+        data.replaceWith(this.backup)
+      }
+    }
   }
 }
 ```
@@ -141,6 +148,8 @@ interface NodeStyle{
   title: String
   zIndex: Number
   params: any
+  position: number[]
+  scale: number[]
 }
 ```
 
