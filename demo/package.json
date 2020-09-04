@@ -7,8 +7,8 @@
   "scripts": {
     "start": "npm run dev",
     "lint": "eslint --ext .js,.vue src --fix",
-    "dll": "cross-env NODE_ENV=dll BABEL_ENV=development webpack --inline --progress --config webpack.dll.js",
-    "dev": "cross-env NODE_ENV=development BABEL_ENV=development webpack-dev-server  --progress --config webpack.config.js --open",
+    "dll": "cross-env NODE_ENV=dll BABEL_ENV=development webpack --inline --config webpack.dll.js",
+    "dev": "cross-env NODE_ENV=development BABEL_ENV=development webpack-dev-server --config webpack.config.js --open",
     "build": "cross-env NODE_ENV=production BABEL_ENV=production webpack --progress --config webpack.config.js"
   },
   "gitHooks": {},
